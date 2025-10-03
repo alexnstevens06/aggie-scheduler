@@ -15,9 +15,11 @@ struct course{
     vector<string> concurrent_requirements; //can either have completed in past or have concurrent enrollment
     vector<string> satisfactions;
     
+    //preprocessed information
     
     //vector<custom_struct> full_prerequisites;
 
+    
 
     vector<result_course> annex_results;
 };
