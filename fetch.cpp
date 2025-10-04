@@ -6,7 +6,7 @@
 #include <vector>
 
 using json = nlohmann::json;
-using std::string, std::vector;
+using std::string, std::vector, std::cout, std::endl;
 
 
 
@@ -58,7 +58,7 @@ double to_double(const json& j, const char* key) {
 
 
 // string getClassData (string course[2], int argc, char** argv) {
-string getClassData (string deptAbbr, int num, int argc, char** argv) {
+string getClassData (string deptAbbr, int num, int argc, char** argv) { //processes anex.us data
     string info = "";
 
     // std::cout << "num" << std::endl;
@@ -124,7 +124,62 @@ string getClassData (string deptAbbr, int num, int argc, char** argv) {
 
 
 
+string getHTMLsource(string link, int argc, char** argv) { //returns the page you go to if you do ctrl+u on a website (I think this is the background JSON or HTML but idk)
+    const char* url = (argc > 1) ? argv[1] : link.c_str();
+
+
+    std::string body;
+    CURL* curl;
+    CURLcode res;
+
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_to_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "cpp-libcurl/1.0");
+
+
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << "\n";
+        }
+        // else {
+        //     std::cout << body << "\n";  // print page contents
+        // }
+
+
+        curl_easy_cleanup(curl);
+    }
+
+
+    curl_global_cleanup();
+    return body;
+}
+
+vector<string> getDeptAbbr(string abbrHTMLsource) {
+    vector<string> abbrs {};
+    return abbrs;
+}
+
+
 int main(int argc, char** argv) {
+
+    //getting deptAbbreviations
+    // string link = "https://anex.us/grades/?dept=CSCE&number=120"; //for testing 
+    string link = "https://catalog.tamu.edu/undergraduate/course-descriptions/#B";
+
+    cout << getHTMLsource(link, argc, argv) << endl;
+
+    
+
+    return 1;//ending program early for testing
+
 
     vector<string> deptAbbreviations = {"AALO","ACCT","AEGD","AFST","AGCJ","AGEC","AGLS","AGSC","AGSM","ALEC","ALED","ANLY","ANSC","ANTH","ARAB","ARCH","AREN","ARSC","ARTS","ASCC","ASIA","ASTR","ATMO","ATTR","BAEN","BESC","BIMS","BIOL","BIOT","BMEN","BUAD","BUSH","BUSN","CARC","CHEM","CHEN","CHIN","CLAS","CLAT","CLEN","COMM","COSC","CPSY","CSCE","CULN","CVEN","DAEN","DCED","DDHS","DHUM","DPHS","ECCB","ECEN","ECMT","ECON","EDAD","EDCI","EDHP","EEBL","EHRD","ENDO","ENDS","ENGL","ENGR","ENGY","ENSS","ENTC","ENTO","ENTR","EPSY","ESET","EVEN","FILM","FINC","FINP","FIVS","FORS","FREN","FSTC","FYEX","GENE","GEOG","GEOL","GEOP","GEOS","GERM","GLST","HBEH","HCPI","HISP","HIST","HLTH","HMGT","HONR","HORT","IBST","IBUS","IDIS","INST","INTA","ISEN","ISTM","ITAL","ITDE","ITSV","JAPN","JOUR","KINE","LAND","LAW","LDEV","LDTC","MASC","MATH","MEEN","MEFB","MEMA","MEPS","MGPT","MKTG","MLST","MMET","MODL","MPHY","MSCI","MSEN","MSTC","MTDE","MUSC","MUST","MXET","NEXT","NRSC","NSEB","NUEN","NURS","NUTR","NVSC","OBIO","OCEN","OCNG","OMFP","OMFR","OMFS","ORTH","PBSI","PEDD","PERF","PERI","PETE","PHAR","PHEB","PHEO","PHIL","PHLT","PHPM","PHSC","PHYS","PLAN","PLPA","POLS","POSC","PROS","PSAA","PVFA","RDNG","RELS","RPTS","RUSS","RWFM","SABR","SCMT","SCSC","SEFB","SENG","SOCI","SOMS","SOPH","SPAN","SPED","SPMT","SPSY","SSEN","STAT","SYEX","TCMG","TEED","TEFB","THEA","UGST","URPN","URSC","VIBS","VIST","VIZA","VLCS","VMID","VPAT","VSCS","VTMI","VTPB","VTPP","WGST","WHMS"};
     
@@ -138,7 +193,7 @@ int main(int argc, char** argv) {
     for (int deptInd=0; deptInd<deptAbbreviations.size(); deptInd++) {
     // for (int deptInd=0; deptInd<1; deptInd++) {
         // for (int num=100; num<1000; num++) {
-        for (int num=100; num<101; num++) {
+        for (int num=120; num<121; num++) {
             std::cout << "----------------------------------------------------------\n\n\n\n\n\n----------------------------------------------------------" << std::endl;
             std::cout << deptAbbreviations.at(deptInd) << num << std::endl;
 
@@ -151,6 +206,10 @@ int main(int argc, char** argv) {
             // string course[2] = {deptAbbreviations.at(deptInd), to_string(120)};
             // getClassData(, argc, argv);
             // getClassData(course, argc, argv);
+
+            // getClassData("CSCE", 120, argc, argv);
+
+
             getClassData(deptAbbreviations.at(deptInd), num, argc, argv);
         }
     }
@@ -210,3 +269,67 @@ int main(int argc, char** argv) {
 
     return 0; //return not actually necessary for function to run
 }
+
+
+
+
+
+
+
+// // libcurl will call this function when data arrives
+// static size_t write_to_string(void* ptr, size_t size, size_t nmemb, void* userdata) {
+//     auto* stream = static_cast<std::string*>(userdata);
+//     size_t count = size * nmemb;  // this was missing before
+//     stream->append(static_cast<char*>(ptr), count);
+//     return count;
+// }
+
+
+
+
+
+// int main(int argc, char** argv) {
+//     // Default to your URL if none given on the command line
+//     // const char* url = (argc > 1) ? argv[1] : "https://anex.us/grades/?dept=CSCE&number=120";
+
+//     string link = "https://anex.us/grades/?dept=CSCE&number=120";
+
+//     cout << getCtrlU(link, argc, argv) << endl;
+
+
+
+//     // const char* url = (argc > 1) ? argv[1] : link.c_str();
+
+
+//     // std::string body;
+//     // CURL* curl;
+//     // CURLcode res;
+
+
+//     // curl_global_init(CURL_GLOBAL_DEFAULT);
+//     // curl = curl_easy_init();
+
+
+//     // if (curl) {
+//     //     curl_easy_setopt(curl, CURLOPT_URL, url);
+//     //     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+//     //     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_to_string);
+//     //     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+//     //     curl_easy_setopt(curl, CURLOPT_USERAGENT, "cpp-libcurl/1.0");
+
+
+//     //     res = curl_easy_perform(curl);
+//     //     if (res != CURLE_OK) {
+//     //         std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << "\n";
+//     //     } else {
+//     //         std::cout << body << "\n";  // print page contents
+//     //     }
+
+
+//     //     curl_easy_cleanup(curl);
+//     // }
+
+
+//     // curl_global_cleanup();
+//     return 0;
+// }
