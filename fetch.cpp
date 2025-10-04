@@ -205,44 +205,25 @@ int main(int argc, char** argv) {
     vector<string> deptAbbrs = getDeptAbbrs(getHTMLsource(link, argc, argv));
     
     for (string& deptAbbr : deptAbbrs) { //trying to use reference to save on memory
-        cout << deptAbbr << endl;
-    }
-
-    // return 1; //ending program early for testing
-
-
-    // vector<string> deptAbbreviations = {"AALO","ACCT","AEGD","AFST","AGCJ","AGEC","AGLS","AGSC","AGSM","ALEC","ALED","ANLY","ANSC","ANTH","ARAB","ARCH","AREN","ARSC","ARTS","ASCC","ASIA","ASTR","ATMO","ATTR","BAEN","BESC","BIMS","BIOL","BIOT","BMEN","BUAD","BUSH","BUSN","CARC","CHEM","CHEN","CHIN","CLAS","CLAT","CLEN","COMM","COSC","CPSY","CSCE","CULN","CVEN","DAEN","DCED","DDHS","DHUM","DPHS","ECCB","ECEN","ECMT","ECON","EDAD","EDCI","EDHP","EEBL","EHRD","ENDO","ENDS","ENGL","ENGR","ENGY","ENSS","ENTC","ENTO","ENTR","EPSY","ESET","EVEN","FILM","FINC","FINP","FIVS","FORS","FREN","FSTC","FYEX","GENE","GEOG","GEOL","GEOP","GEOS","GERM","GLST","HBEH","HCPI","HISP","HIST","HLTH","HMGT","HONR","HORT","IBST","IBUS","IDIS","INST","INTA","ISEN","ISTM","ITAL","ITDE","ITSV","JAPN","JOUR","KINE","LAND","LAW","LDEV","LDTC","MASC","MATH","MEEN","MEFB","MEMA","MEPS","MGPT","MKTG","MLST","MMET","MODL","MPHY","MSCI","MSEN","MSTC","MTDE","MUSC","MUST","MXET","NEXT","NRSC","NSEB","NUEN","NURS","NUTR","NVSC","OBIO","OCEN","OCNG","OMFP","OMFR","OMFS","ORTH","PBSI","PEDD","PERF","PERI","PETE","PHAR","PHEB","PHEO","PHIL","PHLT","PHPM","PHSC","PHYS","PLAN","PLPA","POLS","POSC","PROS","PSAA","PVFA","RDNG","RELS","RPTS","RUSS","RWFM","SABR","SCMT","SCSC","SEFB","SENG","SOCI","SOMS","SOPH","SPAN","SPED","SPMT","SPSY","SSEN","STAT","SYEX","TCMG","TEED","TEFB","THEA","UGST","URPN","URSC","VIBS","VIST","VIZA","VLCS","VMID","VPAT","VSCS","VTMI","VTPB","VTPP","WGST","WHMS"};
-    
-    // vector<string> deptAbbreviations = {"CSCE"};
-    // string course[2] = {"CSCE", string(120)};
-    // string course[2] = {"CSCE", "120"};
-    // string course[2] = {"PHYS", "206"};
-
-    // string course[2];
-
-    for (int deptInd=0; deptInd<deptAbbrs.size(); deptInd++) {
-    // for (int deptInd=0; deptInd<1; deptInd++) {
-        // for (int num=100; num<1000; num++) {
+        // cout << deptAbbr << endl;
+        continue; //if only want to 
         for (int num=120; num<121; num++) {
             std::cout << "----------------------------------------------------------\n\n\n\n\n\n----------------------------------------------------------" << std::endl;
-            std::cout << deptAbbrs.at(deptInd) << num << std::endl;
-
-
-            // string course[2] = {"CSCE", "120"};
-            // course.at(0) = deptAbbreviations.at(deptInd);
-            // course[0] = deptAbbreviations.at(deptInd);
-            // course[1] = std::to_string(num);
             
-            // string course[2] = {deptAbbreviations.at(deptInd), to_string(120)};
-            // getClassData(, argc, argv);
-            // getClassData(course, argc, argv);
-
-            // getClassData("CSCE", 120, argc, argv);
-
-
-            getClassData(deptAbbrs.at(deptInd), num, argc, argv);
+            getClassData(deptAbbr, num, argc, argv);
         }
     }
 
+    
+    link = "https://catalog.tamu.edu/undergraduate/general-information/university-core-curriculum/";
+
+
     return 0; //return not actually necessary for function to run
 }
+
+
+
+/* to run:
+g++ fetch.cpp -o fetch -lcurl
+./fetch
+*/
