@@ -4,9 +4,10 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <algorithm>
 
 using json = nlohmann::json;
-using std::string, std::vector, std::cout, std::endl;
+using std::string, std::vector, std::cout, std::endl, std::find;
 
 
 
@@ -158,10 +159,39 @@ string getHTMLsource(string link, int argc, char** argv) { //returns the page yo
     return body;
 }
 
-vector<string> getDeptAbbr(string abbrHTMLsource) {
-    vector<string> abbrs {};
+// vector<string> getDeptAbbr(string abbrHTMLsource) {
+//     vector<string> abbrs {};
+//     return abbrs;
+// }
+
+
+vector<string> getDeptAbbrs(const string& html) { //maybe returning too much rn but I can't find the values that are being returned too much //i figured out they're grad school courses. The "Laws" I just don't feel like dealing with rn if ever. is honestly a useful delimeter if we want to get rid of grad courses bc it's the only instance of "Laws" in entire html source code so could check if abbr is "Laws" and if so break out of loop.
+    vector<string> abbrs;
+    size_t pos = 0;
+
+    while ((pos = html.find("<a href=", pos)) != string::npos) {
+        // Find the closing ">" of the <a ...> tag
+        size_t start = html.find(">", pos);
+        size_t end   = html.find("-", start);  // dash separates abbr and description
+
+        if (start != string::npos && end != string::npos) {
+            string abbr = html.substr(start + 1, end - (start + 1));
+            // Trim whitespace
+            while (!abbr.empty() && isspace(abbr.back())) abbr.pop_back();
+            while (!abbr.empty() && isspace(abbr.front())) abbr.erase(abbr.begin());
+
+            if (abbr.size() == 4 && find(abbrs.begin(), abbrs.end(), abbr) == abbrs.end()) {
+                abbrs.push_back(abbr);
+            }
+        }
+        pos = end;
+    }
+
+    abbrs.erase(abbrs.begin() + 0); //there was a 2025 at the beginning of the vector this clears
+
     return abbrs;
 }
+
 
 
 int main(int argc, char** argv) {
@@ -170,14 +200,18 @@ int main(int argc, char** argv) {
     // string link = "https://anex.us/grades/?dept=CSCE&number=120"; //for testing 
     string link = "https://catalog.tamu.edu/undergraduate/course-descriptions/#B";
 
-    cout << getHTMLsource(link, argc, argv) << endl;
+    // cout << getHTMLsource(link, argc, argv) << endl;
 
+    vector<string> deptAbbrs = getDeptAbbrs(getHTMLsource(link, argc, argv));
     
+    for (string& deptAbbr : deptAbbrs) { //trying to use reference to save on memory
+        cout << deptAbbr << endl;
+    }
 
-    return 1;//ending program early for testing
+    // return 1; //ending program early for testing
 
 
-    vector<string> deptAbbreviations = {"AALO","ACCT","AEGD","AFST","AGCJ","AGEC","AGLS","AGSC","AGSM","ALEC","ALED","ANLY","ANSC","ANTH","ARAB","ARCH","AREN","ARSC","ARTS","ASCC","ASIA","ASTR","ATMO","ATTR","BAEN","BESC","BIMS","BIOL","BIOT","BMEN","BUAD","BUSH","BUSN","CARC","CHEM","CHEN","CHIN","CLAS","CLAT","CLEN","COMM","COSC","CPSY","CSCE","CULN","CVEN","DAEN","DCED","DDHS","DHUM","DPHS","ECCB","ECEN","ECMT","ECON","EDAD","EDCI","EDHP","EEBL","EHRD","ENDO","ENDS","ENGL","ENGR","ENGY","ENSS","ENTC","ENTO","ENTR","EPSY","ESET","EVEN","FILM","FINC","FINP","FIVS","FORS","FREN","FSTC","FYEX","GENE","GEOG","GEOL","GEOP","GEOS","GERM","GLST","HBEH","HCPI","HISP","HIST","HLTH","HMGT","HONR","HORT","IBST","IBUS","IDIS","INST","INTA","ISEN","ISTM","ITAL","ITDE","ITSV","JAPN","JOUR","KINE","LAND","LAW","LDEV","LDTC","MASC","MATH","MEEN","MEFB","MEMA","MEPS","MGPT","MKTG","MLST","MMET","MODL","MPHY","MSCI","MSEN","MSTC","MTDE","MUSC","MUST","MXET","NEXT","NRSC","NSEB","NUEN","NURS","NUTR","NVSC","OBIO","OCEN","OCNG","OMFP","OMFR","OMFS","ORTH","PBSI","PEDD","PERF","PERI","PETE","PHAR","PHEB","PHEO","PHIL","PHLT","PHPM","PHSC","PHYS","PLAN","PLPA","POLS","POSC","PROS","PSAA","PVFA","RDNG","RELS","RPTS","RUSS","RWFM","SABR","SCMT","SCSC","SEFB","SENG","SOCI","SOMS","SOPH","SPAN","SPED","SPMT","SPSY","SSEN","STAT","SYEX","TCMG","TEED","TEFB","THEA","UGST","URPN","URSC","VIBS","VIST","VIZA","VLCS","VMID","VPAT","VSCS","VTMI","VTPB","VTPP","WGST","WHMS"};
+    // vector<string> deptAbbreviations = {"AALO","ACCT","AEGD","AFST","AGCJ","AGEC","AGLS","AGSC","AGSM","ALEC","ALED","ANLY","ANSC","ANTH","ARAB","ARCH","AREN","ARSC","ARTS","ASCC","ASIA","ASTR","ATMO","ATTR","BAEN","BESC","BIMS","BIOL","BIOT","BMEN","BUAD","BUSH","BUSN","CARC","CHEM","CHEN","CHIN","CLAS","CLAT","CLEN","COMM","COSC","CPSY","CSCE","CULN","CVEN","DAEN","DCED","DDHS","DHUM","DPHS","ECCB","ECEN","ECMT","ECON","EDAD","EDCI","EDHP","EEBL","EHRD","ENDO","ENDS","ENGL","ENGR","ENGY","ENSS","ENTC","ENTO","ENTR","EPSY","ESET","EVEN","FILM","FINC","FINP","FIVS","FORS","FREN","FSTC","FYEX","GENE","GEOG","GEOL","GEOP","GEOS","GERM","GLST","HBEH","HCPI","HISP","HIST","HLTH","HMGT","HONR","HORT","IBST","IBUS","IDIS","INST","INTA","ISEN","ISTM","ITAL","ITDE","ITSV","JAPN","JOUR","KINE","LAND","LAW","LDEV","LDTC","MASC","MATH","MEEN","MEFB","MEMA","MEPS","MGPT","MKTG","MLST","MMET","MODL","MPHY","MSCI","MSEN","MSTC","MTDE","MUSC","MUST","MXET","NEXT","NRSC","NSEB","NUEN","NURS","NUTR","NVSC","OBIO","OCEN","OCNG","OMFP","OMFR","OMFS","ORTH","PBSI","PEDD","PERF","PERI","PETE","PHAR","PHEB","PHEO","PHIL","PHLT","PHPM","PHSC","PHYS","PLAN","PLPA","POLS","POSC","PROS","PSAA","PVFA","RDNG","RELS","RPTS","RUSS","RWFM","SABR","SCMT","SCSC","SEFB","SENG","SOCI","SOMS","SOPH","SPAN","SPED","SPMT","SPSY","SSEN","STAT","SYEX","TCMG","TEED","TEFB","THEA","UGST","URPN","URSC","VIBS","VIST","VIZA","VLCS","VMID","VPAT","VSCS","VTMI","VTPB","VTPP","WGST","WHMS"};
     
     // vector<string> deptAbbreviations = {"CSCE"};
     // string course[2] = {"CSCE", string(120)};
@@ -186,12 +220,12 @@ int main(int argc, char** argv) {
 
     // string course[2];
 
-    for (int deptInd=0; deptInd<deptAbbreviations.size(); deptInd++) {
+    for (int deptInd=0; deptInd<deptAbbrs.size(); deptInd++) {
     // for (int deptInd=0; deptInd<1; deptInd++) {
         // for (int num=100; num<1000; num++) {
         for (int num=120; num<121; num++) {
             std::cout << "----------------------------------------------------------\n\n\n\n\n\n----------------------------------------------------------" << std::endl;
-            std::cout << deptAbbreviations.at(deptInd) << num << std::endl;
+            std::cout << deptAbbrs.at(deptInd) << num << std::endl;
 
 
             // string course[2] = {"CSCE", "120"};
@@ -206,62 +240,9 @@ int main(int argc, char** argv) {
             // getClassData("CSCE", 120, argc, argv);
 
 
-            getClassData(deptAbbreviations.at(deptInd), num, argc, argv);
+            getClassData(deptAbbrs.at(deptInd), num, argc, argv);
         }
     }
-    
-
-    // getClassData(course, argc, argv);
-
-    // try {
-    //     std::string dept   = (argc > 1) ? argv[1] : "CSCE";
-    //     std::string number = (argc > 2) ? argv[2] : "120";
-
-    //     curl_global_init(CURL_GLOBAL_DEFAULT);
-
-    //     const std::string url = "https://anex.us/grades/getData/";
-    //     std::string fields = "dept=" + dept + "&number=" + number;
-
-    //     std::string response = http_post(url, fields);
-    //     json j = json::parse(response);
-
-    //     if (!j.contains("classes") || !j["classes"].is_array()) {
-    //         std::cerr << "Unexpected JSON shape, first 2KB:\n"
-    //                   << response.substr(0, 2000) << "\n";
-    //         curl_global_cleanup();
-    //         return 2;
-    //     }
-
-    //     const json& rows = j["classes"];
-
-    //     std::cout << "Year,Semester,Prof,Section,GPA,A,B,C,D,F,I,Q,S,U,X\n";
-    //     for (const auto& r : rows) {
-    //         int    year     = to_int(r, "year");
-    //         std::string sem = r.value("semester", "");
-    //         std::string prof= r.value("prof", "");
-    //         int    section  = to_int(r, "section");
-    //         double gpa      = to_double(r, "gpa");
-
-    //         int A = to_int(r,"A"), B = to_int(r,"B"), C = to_int(r,"C"),
-    //             D = to_int(r,"D"), F = to_int(r,"F"), I = to_int(r,"I"),
-    //             Q = to_int(r,"Q"), S = to_int(r,"S"), U = to_int(r,"U"),
-    //             X = to_int(r,"X");
-
-    //         std::cout << year << ',' << sem << ',' << prof << ','
-    //                   << section << ',' << gpa << ','
-    //                   << A << ',' << B << ',' << C << ','
-    //                   << D << ',' << F << ',' << I << ','
-    //                   << Q << ',' << S << ',' << U << ',' << X << "\n";
-    //     }
-
-    //     curl_global_cleanup();
-    //     return 0;
-    // } catch (const std::exception& e) {
-    //     std::cerr << "Error: " << e.what() << "\n";
-    //     return 1;
-    // }
-
-
 
     return 0; //return not actually necessary for function to run
 }
