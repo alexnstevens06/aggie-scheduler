@@ -115,10 +115,6 @@ string getClassData (string deptAbbr, int num, int argc, char** argv) { //proces
         return "invalid 1";
     }
 
-
-
-
-
     return info;
 }
 
@@ -269,67 +265,3 @@ int main(int argc, char** argv) {
 
     return 0; //return not actually necessary for function to run
 }
-
-
-
-
-
-
-
-// // libcurl will call this function when data arrives
-// static size_t write_to_string(void* ptr, size_t size, size_t nmemb, void* userdata) {
-//     auto* stream = static_cast<std::string*>(userdata);
-//     size_t count = size * nmemb;  // this was missing before
-//     stream->append(static_cast<char*>(ptr), count);
-//     return count;
-// }
-
-
-
-
-
-// int main(int argc, char** argv) {
-//     // Default to your URL if none given on the command line
-//     // const char* url = (argc > 1) ? argv[1] : "https://anex.us/grades/?dept=CSCE&number=120";
-
-//     string link = "https://anex.us/grades/?dept=CSCE&number=120";
-
-//     cout << getCtrlU(link, argc, argv) << endl;
-
-
-
-//     // const char* url = (argc > 1) ? argv[1] : link.c_str();
-
-
-//     // std::string body;
-//     // CURL* curl;
-//     // CURLcode res;
-
-
-//     // curl_global_init(CURL_GLOBAL_DEFAULT);
-//     // curl = curl_easy_init();
-
-
-//     // if (curl) {
-//     //     curl_easy_setopt(curl, CURLOPT_URL, url);
-//     //     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-//     //     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_to_string);
-//     //     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
-//     //     curl_easy_setopt(curl, CURLOPT_USERAGENT, "cpp-libcurl/1.0");
-
-
-//     //     res = curl_easy_perform(curl);
-//     //     if (res != CURLE_OK) {
-//     //         std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << "\n";
-//     //     } else {
-//     //         std::cout << body << "\n";  // print page contents
-//     //     }
-
-
-//     //     curl_easy_cleanup(curl);
-//     // }
-
-
-//     // curl_global_cleanup();
-//     return 0;
-// }
