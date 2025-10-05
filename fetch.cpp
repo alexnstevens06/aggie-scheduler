@@ -194,6 +194,276 @@ vector<string> getDeptAbbrs(const string& html) { //maybe returning too much rn 
 
 
 
+static inline string trim(const string& s) {
+    const char* ws = " \t\n\r";
+    size_t a = s.find_first_not_of(ws);
+    if (a == string::npos) return "";
+    size_t b = s.find_last_not_of(ws);
+    return s.substr(a, b - a + 1);
+}
+
+// string buildCategoryLine(const string& html) {
+//     // 1) Extract category using the " SCH" marker
+//     size_t schPos = html.find(" SCH");
+//     if (schPos == string::npos) return ""; // not found
+
+//     size_t catStart = html.rfind('>', schPos);
+//     if (catStart == string::npos) return "";
+
+//     string category = trim(html.substr(catStart + 1, schPos - (catStart + 1)));
+//     if (category.empty()) return "";
+
+//     // 2) Extract course names between the given delimiters
+//     const string leftDelim  = R"(/td><td>)";
+//     const string rightDelim = R"(/td><td )";
+
+//     vector<string> courses;
+//     size_t pos = 0;
+//     while ((pos = html.find(leftDelim, pos)) != string::npos) {
+//         size_t start = pos + leftDelim.size();
+//         size_t end = html.find(rightDelim, start);
+//         if (end == string::npos) break; // no right bound
+//         string course = trim(html.substr(start, end - start));
+//         if (!course.empty()) courses.push_back(course);
+//         pos = end + rightDelim.size();
+//     }
+
+//     // 3) Build "Category: a, b, c"
+//     string out = category + ": ";
+//     for (size_t i = 0; i < courses.size(); ++i) {
+//         out += courses[i];
+//         if (i + 1 < courses.size()) out += ", ";
+//     }
+//     return out;
+// }
+
+// vector<string> parseCategories(const string& html) {
+//     vector<string> results;
+//     size_t pos = 0;
+
+//     const string leftDelim  = R"(/td><td>)";
+//     const string rightDelim = R"(/td><td )";
+
+//     while (true) {
+//         // Find next category marker
+//         size_t schPos = html.find(" SCH", pos);
+//         if (schPos == string::npos) break;
+
+//         size_t catStart = html.rfind(">", schPos);
+//         if (catStart == string::npos) break;
+//         string category = trim(html.substr(catStart + 1, schPos - (catStart + 1)));
+
+//         // Gather course names until the next </table>
+//         vector<string> courses;
+//         size_t tableEnd = html.find("</table>", schPos);
+//         size_t coursePos = schPos;
+
+//         while ((coursePos = html.find(leftDelim, coursePos)) != string::npos) {
+//             if (tableEnd != string::npos && coursePos > tableEnd) break;
+//             size_t start = coursePos + leftDelim.size();
+//             size_t end = html.find(rightDelim, start);
+//             if (end == string::npos) break;
+//             // string course = trim(html.substr(start, end - start));
+//             string course = trim(html.substr(start, end - start - 1));
+//             if (!course.empty()) courses.push_back(course);
+//             coursePos = end + rightDelim.size();
+//         }
+
+//         // Build line "Category: course1, course2..."
+//         string line = category + ": ";
+//         for (size_t i = 0; i < courses.size(); ++i) {
+//             line += courses[i];
+//             if (i + 1 < courses.size()) line += ", ";
+//         }
+//         results.push_back(line);
+
+//         pos = schPos + 4; // move past this SCH
+//     }
+
+//     return results;
+// }
+
+vector<vector<string>> parseCategories(const string& html) { //should eventually move this func and trim() (maybe on trim()) to getCores()
+    vector<vector<string>> results;
+    size_t pos = 0;
+
+    const string leftDelim  = R"(/td><td>)";
+    const string rightDelim = R"(/td><td )";
+
+    while (true) {
+        // Find next category marker
+        size_t schPos = html.find(" SCH", pos);
+        if (schPos == string::npos) break;
+
+        size_t catStart = html.rfind(">", schPos);
+        if (catStart == string::npos) break;
+        string category = trim(html.substr(catStart + 1, schPos - (catStart + 1)));
+
+        // Gather course names until the next </table>
+        vector<string> row;
+        row.push_back(category);
+
+        size_t tableEnd = html.find("</table>", schPos);
+        size_t coursePos = schPos;
+
+        while ((coursePos = html.find(leftDelim, coursePos)) != string::npos) {
+            if (tableEnd != string::npos && coursePos > tableEnd) break;
+            size_t start = coursePos + leftDelim.size();
+            size_t end = html.find(rightDelim, start);
+            if (end == string::npos) break;
+            // string course = trim(html.substr(start, end - start));
+            string course = trim(html.substr(start, end - start - 1));
+            if (!course.empty()) row.push_back(course);
+            coursePos = end + rightDelim.size();
+        }
+
+        results.push_back(row);
+        pos = schPos + 4; // move past this " SCH"
+    }
+
+    return results;
+}
+
+
+
+vector<vector<string>> getCores (const string& html) {
+    //get rid of instances of school by checking for "SCH" (all caps) //also found a list of all the depts full names on this page but idk if that's useful
+    //R"("hourscol">)" is the unique identifier that preceeds the number of hours for a class
+    //R"(/td><td>)" is the unique identifier that appears before each course name
+    size_t pos = 0;
+    const string headerChecker = R"(onClick="showSection('text', this);"><span>)";
+
+    //bypassing useless " SCH" instances
+    while ((html.find(headerChecker, pos)) != string::npos) {
+        pos = html.find(headerChecker, pos);
+        // cout << html.substr(pos, 100) << endl;
+        // cout << pos << endl;
+        pos += headerChecker.length();
+    }
+    
+    // return {}; //figured out inf loop is second loop
+    
+    // cout << "wassup" <<endl;
+    // cout << html.find(" SCH", pos) <<endl;
+
+    // if (html.find(" SCH", pos) == string::npos) {
+    //     cout << "true" << endl;
+    // }
+
+    // cout << html.substr(pos, 100) << "\n\n";
+    
+    // pos += 100;
+
+
+    // cout << html.find(" SCH", pos) << endl;
+
+    // const string courseNameStart = R"(/td><td>)";
+    // const string courseNameEnd = R"(/td><td )";
+    
+    // size_t nextSCH, start, end;
+
+    // cout << buildCategoryLine(html) << endl;
+    // auto lines = parseCategories(html);
+    // for (auto& line : lines) {
+    //     cout << line << "\n\n" << endl;
+    // }
+
+
+    vector<vector<string>> results;
+    // size_t pos = 0; //can comment out bc pos already where it needs to be
+
+    const string leftDelim  = R"(/td><td>)";
+    const string rightDelim = R"(/td><td )";
+
+    while (true) {
+        // Find next category marker
+        size_t schPos = html.find(" SCH", pos);
+        if (schPos == string::npos) break;
+
+        size_t catStart = html.rfind(">", schPos);
+        if (catStart == string::npos) break;
+        string category = trim(html.substr(catStart + 1, schPos - (catStart + 1)));
+
+        // Gather course names until the next </table>
+        vector<string> row;
+        row.push_back(category);
+
+        size_t tableEnd = html.find("</table>", schPos);
+        size_t coursePos = schPos;
+
+        while ((coursePos = html.find(leftDelim, coursePos)) != string::npos) {
+            if (tableEnd != string::npos && coursePos > tableEnd) break;
+            size_t start = coursePos + leftDelim.size();
+            size_t end = html.find(rightDelim, start);
+            if (end == string::npos) break;
+            // string course = trim(html.substr(start, end - start));
+            string course = trim(html.substr(start, end - start - 1));
+            if (!course.empty()) row.push_back(course);
+            coursePos = end + rightDelim.size();
+        }
+
+        results.push_back(row);
+        pos = schPos + 4; // move past this " SCH"
+    }
+
+    // return results; //not returning
+
+
+
+
+
+
+    // auto coreVecs = parseCategories(html); //ig auto auto-assigns types
+    
+    // for (const auto& coreVec : coreVecs) {
+
+
+    //prints out 2D vector
+
+    for (const auto& coreVec : results) {
+        cout << coreVec.at(0) << '\n' << endl;
+        for (size_t i=1; i<coreVec.size(); i++) {
+            cout << coreVec.at(i) << ";; ";
+        }
+        cout << "\n\n\n" << endl; //flushing text and seperating core credits
+    }
+
+
+    return results;
+
+    // while ((pos = html.find(" SCH", pos)) != string::npos) {
+    // // while ((html.find(" SCH", pos)) != string::npos) {
+
+    //     nextSCH = html.find(" SCH", pos+1);
+    //     // nextSCH = pos;
+    //     cout << "nextSCH1: " << nextSCH << endl;
+    //     cout << "start1: " << html.find(courseNameStart, pos) << endl;
+
+    //     if (nextSCH > (start = html.find(courseNameStart, pos))) {
+    //         cout << "True" << endl;
+    //     }
+    //     // return {}; //troublshooting
+
+    //     while (nextSCH > (start = html.find(courseNameStart, pos))) { //sectioning off the vectors
+    //         // cout << html.substr(start+courseNameStart.length(), end=html.find(courseNameEnd, pos)) << endl;
+    //         cout << "nextSCH: " << nextSCH << endl;
+    //         // cout << "start+len: " << start+courseNameStart.length() << endl;
+    //         cout << html.substr(start, 100) << "\n\n";
+    //         cout << "end: " << (end=html.find(courseNameEnd, pos)) << endl;
+
+            
+            
+    //         // end = html.find("-", start);
+    //         pos = end;
+    //     }
+        
+
+    // }
+
+    // return {};
+} 
+
+
 int main(int argc, char** argv) {
 
     //getting deptAbbreviations
@@ -204,7 +474,7 @@ int main(int argc, char** argv) {
 
     vector<string> deptAbbrs = getDeptAbbrs(getHTMLsource(link, argc, argv));
     
-    for (string& deptAbbr : deptAbbrs) { //trying to use reference to save on memory
+    for (const string& deptAbbr : deptAbbrs) { //trying to use reference to save on memory
         // cout << deptAbbr << endl;
         continue; //if only want to 
         for (int num=120; num<121; num++) {
@@ -216,7 +486,8 @@ int main(int argc, char** argv) {
 
     
     link = "https://catalog.tamu.edu/undergraduate/general-information/university-core-curriculum/";
-
+    // cout << getHTMLsource(link, argc, argv) << endl;
+    getCores(getHTMLsource(link, argc, argv));
 
     return 0; //return not actually necessary for function to run
 }
